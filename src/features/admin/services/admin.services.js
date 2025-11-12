@@ -25,4 +25,38 @@ export const AdminService = {
     }
     return 0;
   },
+
+  // === Servicios para gestión de casas ===
+
+  /**
+   * Crear una nueva casa
+   * @param {Object} houseData - Datos de la casa { address, city, owner }
+   * @returns {Promise<Object>} - Casa creada
+   */
+  async createHouse(houseData) {
+    const res = await api.post("/houses", houseData);
+    return res.data;
+  },
+
+  /**
+   * Obtener todas las casas (solo admin)
+   * @returns {Promise<Array>} - Lista de todas las casas
+   */
+  async getAllHouses() {
+    const res = await api.get("/houses/all");
+    return res.data;
+  },
+
+  /**
+   * Obtener estadísticas de consumo de una casa en un periodo
+   * @param {string} houseId - ID de la casa
+   * @param {string} period - Periodo (day, week, month, year)
+   * @returns {Promise<Object>} - Estadísticas de consumo
+   */
+  async getHouseConsumptionStats(houseId, period = "month") {
+    const res = await api.get(`/readings/house/${houseId}/stats`, {
+      params: { period },
+    });
+    return res.data;
+  },
 };
