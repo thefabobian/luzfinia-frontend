@@ -15,15 +15,16 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  IconButton,
-  Chip,
   CircularProgress,
   Alert,
+  IconButton,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
 import {
   Add,
-  Visibility,
-  Delete,
   BarChart as BarChartIcon,
 } from "@mui/icons-material";
 import { AdminService } from "../services/admin.services";
@@ -38,6 +39,7 @@ export default function HousesManagement() {
   const [selectedHouse, setSelectedHouse] = useState(null);
   const [houseStats, setHouseStats] = useState(null);
   const [loadingStats, setLoadingStats] = useState(false);
+  const [selectedPeriod, setSelectedPeriod] = useState("month");
   const { enqueueSnackbar } = useSnackbar();
 
   // Estado del formulario de nueva casa
@@ -92,7 +94,7 @@ export default function HousesManagement() {
     }
   };
 
-  const handleViewStats = async (house) => {
+  const handleViewStats = async (house, period = "month") => {
     try {
       setSelectedHouse(house);
       setOpenStatsDialog(true);
@@ -100,7 +102,7 @@ export default function HousesManagement() {
 
       const stats = await AdminService.getHouseConsumptionStats(
         house._id,
-        "month"
+        period
       );
       setHouseStats(stats);
     } catch (err) {
@@ -114,10 +116,18 @@ export default function HousesManagement() {
     }
   };
 
+  const handleChangePeriod = (newPeriod) => {
+    setSelectedPeriod(newPeriod);
+    if (selectedHouse) {
+      handleViewStats(selectedHouse, newPeriod);
+    }
+  };
+
   const handleCloseStatsDialog = () => {
     setOpenStatsDialog(false);
     setSelectedHouse(null);
     setHouseStats(null);
+    setSelectedPeriod("month");
   };
 
   if (loading) {
@@ -194,10 +204,13 @@ export default function HousesManagement() {
                 Nombre
               </TableCell>
               <TableCell sx={{ color: "#FFD54F", fontWeight: 600 }}>
-                Descripción
+                Propietario
               </TableCell>
               <TableCell sx={{ color: "#FFD54F", fontWeight: 600 }}>
-                Estado
+                Electrodomésticos
+              </TableCell>
+              <TableCell sx={{ color: "#FFD54F", fontWeight: 600 }}>
+                Consumo Total (kWh)
               </TableCell>
               <TableCell
                 align="center"
@@ -210,7 +223,7 @@ export default function HousesManagement() {
           <TableBody>
             {houses.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} align="center" sx={{ color: "#b8bcc8" }}>
+                <TableCell colSpan={5} align="center" sx={{ color: "#b8bcc8" }}>
                   No hay casas registradas
                 </TableCell>
               </TableRow>
@@ -221,41 +234,27 @@ export default function HousesManagement() {
                     {house.name}
                   </TableCell>
                   <TableCell sx={{ color: "#b8bcc8" }}>
-                    {house.description}
+                    {house.user?.name || "Sin asignar"}
                   </TableCell>
-                  <TableCell>
-                    <Chip
-                      label="Activa"
-                      size="small"
-                      sx={{
-                        background: "#00E676",
-                        color: "#1a1d24",
-                        fontWeight: 600,
-                      }}
-                    />
+                  <TableCell sx={{ color: "#b8bcc8" }}>
+                    {house.appliances?.length || 0}
+                  </TableCell>
+                  <TableCell sx={{ color: "#00E676", fontWeight: 600 }}>
+                    {house.totalConsumption?.toFixed(2) || "0.00"}
                   </TableCell>
                   <TableCell align="center">
                     <IconButton
                       size="small"
-                      onClick={() => handleViewStats(house)}
-                      sx={{ color: "#2196F3" }}
-                      title="Ver estadísticas"
+                      onClick={() => handleViewStats(house, "month")}
+                      sx={{
+                        color: "#2196F3",
+                        "&:hover": {
+                          background: "rgba(33, 150, 243, 0.1)",
+                        },
+                      }}
+                      title="Ver estadísticas detalladas"
                     >
                       <BarChartIcon />
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      sx={{ color: "#b8bcc8" }}
-                      title="Ver detalles"
-                    >
-                      <Visibility />
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      sx={{ color: "#f44336" }}
-                      title="Eliminar"
-                    >
-                      <Delete />
                     </IconButton>
                   </TableCell>
                 </TableRow>
@@ -293,6 +292,7 @@ export default function HousesManagement() {
                 setFormData({ ...formData, name: e.target.value })
               }
               placeholder="Ej: Casa Familiar"
+              autoFocus
               sx={{
                 "& .MuiInputBase-root": { color: "#fff" },
                 "& .MuiInputLabel-root": { color: "#b8bcc8" },
@@ -346,7 +346,7 @@ export default function HousesManagement() {
         </DialogActions>
       </Dialog>
 
-      {/* Diálogo para ver estadísticas */}
+      {/* Diálogo de Estadísticas */}
       <Dialog
         open={openStatsDialog}
         onClose={handleCloseStatsDialog}
@@ -360,14 +360,51 @@ export default function HousesManagement() {
         }}
       >
         <DialogTitle>
-          <Typography variant="h6" fontWeight={600}>
-            Estadísticas de Consumo
-          </Typography>
-          {selectedHouse && (
-            <Typography variant="body2" color="#b8bcc8">
-              {selectedHouse.name}
-            </Typography>
-          )}
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Box>
+              <Typography variant="h6" fontWeight={600}>
+                Estadísticas de Consumo
+              </Typography>
+              {selectedHouse && (
+                <Typography variant="body2" color="#b8bcc8">
+                  {selectedHouse.name}
+                </Typography>
+              )}
+            </Box>
+            <FormControl
+              size="small"
+              sx={{
+                minWidth: 120,
+                "& .MuiInputLabel-root": { color: "#b8bcc8" },
+                "& .MuiSelect-root": { color: "#fff" },
+                "& .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "rgba(255,255,255,0.3)",
+                },
+                "&:hover .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "#FFD54F",
+                },
+              }}
+            >
+              <InputLabel id="period-select-label">Periodo</InputLabel>
+              <Select
+                labelId="period-select-label"
+                value={selectedPeriod}
+                label="Periodo"
+                onChange={(e) => handleChangePeriod(e.target.value)}
+              >
+                <MenuItem value="day">Día</MenuItem>
+                <MenuItem value="week">Semana</MenuItem>
+                <MenuItem value="month">Mes</MenuItem>
+                <MenuItem value="year">Año</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
         </DialogTitle>
         <DialogContent>
           {loadingStats ? (
@@ -393,7 +430,8 @@ export default function HousesManagement() {
                 <Paper
                   sx={{
                     p: 2,
-                    background: "linear-gradient(135deg, #2196F3 0%, #1976D2 100%)",
+                    background:
+                      "linear-gradient(135deg, #2196F3 0%, #1976D2 100%)",
                     borderRadius: 2,
                   }}
                 >
@@ -401,27 +439,29 @@ export default function HousesManagement() {
                     Consumo Total
                   </Typography>
                   <Typography variant="h4" fontWeight={700}>
-                    {houseStats.totalConsumption || 0} kWh
+                    {houseStats.totalKwh || 0} kWh
                   </Typography>
                 </Paper>
                 <Paper
                   sx={{
                     p: 2,
-                    background: "linear-gradient(135deg, #00E676 0%, #00C853 100%)",
+                    background:
+                      "linear-gradient(135deg, #00E676 0%, #00C853 100%)",
                     borderRadius: 2,
                   }}
                 >
                   <Typography variant="body2" fontWeight={600} color="#1a1d24">
-                    Promedio Diario
+                    Costo Aproximado
                   </Typography>
                   <Typography variant="h4" fontWeight={700} color="#1a1d24">
-                    {houseStats.averageDaily || 0} kWh
+                    {houseStats.costoAproximado || "$0 COP"}
                   </Typography>
                 </Paper>
                 <Paper
                   sx={{
                     p: 2,
-                    background: "linear-gradient(135deg, #9C27B0 0%, #6A1B9A 100%)",
+                    background:
+                      "linear-gradient(135deg, #9C27B0 0%, #6A1B9A 100%)",
                     borderRadius: 2,
                   }}
                 >
@@ -429,12 +469,19 @@ export default function HousesManagement() {
                     Lecturas
                   </Typography>
                   <Typography variant="h4" fontWeight={700}>
-                    {houseStats.readingsCount || 0}
+                    {houseStats.lecturas || 0}
                   </Typography>
                 </Paper>
               </Box>
               <Typography variant="body2" color="#b8bcc8" sx={{ mt: 2 }}>
-                Periodo: Último mes
+                Periodo:{" "}
+                {selectedPeriod === "day"
+                  ? "Último día"
+                  : selectedPeriod === "week"
+                  ? "Última semana"
+                  : selectedPeriod === "month"
+                  ? "Último mes"
+                  : "Último año"}
               </Typography>
             </Box>
           ) : (

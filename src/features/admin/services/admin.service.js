@@ -31,7 +31,7 @@ export const AdminService = {
   /**
    * Crear una nueva casa
    * @param {Object} houseData - Datos de la casa { name, description }
-   * @returns {Promise<Object>} - Casa creada
+   * @returns {Promise<Object>} - Casa creada con estructura: { _id, name, user, appliances, totalConsumption, createdAt, updatedAt }
    */
   async createHouse(houseData) {
     const res = await api.post("/houses", houseData);
@@ -51,7 +51,7 @@ export const AdminService = {
    * Obtener estadísticas de consumo de una casa en un periodo
    * @param {string} houseId - ID de la casa
    * @param {string} period - Periodo (day, week, month, year)
-   * @returns {Promise<Object>} - Estadísticas de consumo
+   * @returns {Promise<Object>} - Estadísticas: { houseId, period, totalKwh, costoAproximado, lecturas }
    */
   async getHouseConsumptionStats(houseId, period = "month") {
     const res = await api.get(`/readings/house/${houseId}/stats`, {
