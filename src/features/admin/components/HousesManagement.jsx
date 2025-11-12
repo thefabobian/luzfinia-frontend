@@ -22,12 +22,14 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Chip,
 } from "@mui/material";
 import {
   Add,
   BarChart as BarChartIcon,
+  FilterList,
 } from "@mui/icons-material";
-import { AdminService } from "../services/admin.services";
+import { AdminService } from "../services/admin.service";
 import { useSnackbar } from "notistack";
 
 export default function HousesManagement() {
@@ -40,6 +42,7 @@ export default function HousesManagement() {
   const [houseStats, setHouseStats] = useState(null);
   const [loadingStats, setLoadingStats] = useState(false);
   const [selectedPeriod, setSelectedPeriod] = useState("month");
+  const [showOnlyAvailable, setShowOnlyAvailable] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
 
   // Estado del formulario de nueva casa
@@ -53,11 +56,13 @@ export default function HousesManagement() {
     loadHouses();
   }, []);
 
-  const loadHouses = async () => {
+  const loadHouses = async (availableOnly = false) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await AdminService.getAllHouses();
+      const data = availableOnly
+        ? await AdminService.getAvailableHouses()
+        : await AdminService.getAllHouses();
       setHouses(data);
     } catch (err) {
       console.error("Error al cargar casas:", err);
@@ -66,6 +71,12 @@ export default function HousesManagement() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleToggleAvailable = () => {
+    const newValue = !showOnlyAvailable;
+    setShowOnlyAvailable(newValue);
+    loadHouses(newValue);
   };
 
   const handleCreateHouse = async () => {
@@ -165,28 +176,61 @@ export default function HousesManagement() {
         }}
       >
         <Box>
-          <Typography variant="h5" fontWeight={600} color="#fff">
-            Gestión de Casas
-          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
+            <Typography variant="h5" fontWeight={600} color="#fff">
+              Gestión de Casas
+            </Typography>
+            {showOnlyAvailable && (
+              <Chip
+                label="Disponibles"
+                size="small"
+                sx={{
+                  background: "#2196F3",
+                  color: "#fff",
+                  fontWeight: 600,
+                }}
+              />
+            )}
+          </Box>
           <Typography variant="body2" color="#b8bcc8">
-            Total de casas registradas: {houses.length}
+            {showOnlyAvailable
+              ? `Casas disponibles: ${houses.length}`
+              : `Total de casas registradas: ${houses.length}`}
           </Typography>
         </Box>
-        <Button
-          variant="contained"
-          startIcon={<Add />}
-          onClick={() => setOpenCreateDialog(true)}
-          sx={{
-            background: "linear-gradient(135deg, #FFD54F 0%, #FFA726 100%)",
-            color: "#1a1d24",
-            fontWeight: 600,
-            "&:hover": {
-              background: "linear-gradient(135deg, #FFA726 0%, #FF8A50 100%)",
-            },
-          }}
-        >
-          Nueva Casa
-        </Button>
+        <Box sx={{ display: "flex", gap: 2 }}>
+          <Button
+            variant="outlined"
+            startIcon={<FilterList />}
+            onClick={handleToggleAvailable}
+            sx={{
+              color: showOnlyAvailable ? "#2196F3" : "#b8bcc8",
+              borderColor: showOnlyAvailable ? "#2196F3" : "rgba(255,255,255,0.3)",
+              fontWeight: 600,
+              "&:hover": {
+                borderColor: "#2196F3",
+                background: "rgba(33, 150, 243, 0.1)",
+              },
+            }}
+          >
+            {showOnlyAvailable ? "Ver Todas" : "Solo Disponibles"}
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<Add />}
+            onClick={() => setOpenCreateDialog(true)}
+            sx={{
+              background: "linear-gradient(135deg, #FFD54F 0%, #FFA726 100%)",
+              color: "#1a1d24",
+              fontWeight: 600,
+              "&:hover": {
+                background: "linear-gradient(135deg, #FFA726 0%, #FF8A50 100%)",
+              },
+            }}
+          >
+            Nueva Casa
+          </Button>
+        </Box>
       </Box>
 
       {/* Tabla de casas */}

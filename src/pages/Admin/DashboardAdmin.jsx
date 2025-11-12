@@ -29,7 +29,7 @@ import {
 import { AuthContext } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useSnackbar } from "notistack";
-import { AdminService } from "../../features/admin/services/admin.services";
+import { AdminService } from "../../features/admin/services/admin.service";
 import HousesManagement from "../../features/admin/components/HousesManagement";
 
 const drawerWidth = 240;

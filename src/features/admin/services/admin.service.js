@@ -48,6 +48,15 @@ export const AdminService = {
   },
 
   /**
+   * Obtener casas disponibles (sin usuario asignado)
+   * @returns {Promise<Array>} - Lista de casas disponibles
+   */
+  async getAvailableHouses() {
+    const res = await api.get("/houses/available");
+    return res.data;
+  },
+
+  /**
    * Obtener estadísticas de consumo de una casa en un periodo
    * @param {string} houseId - ID de la casa
    * @param {string} period - Periodo (day, week, month, year)
