@@ -30,7 +30,7 @@ export const AdminService = {
 
   /**
    * Crear una nueva casa
-   * @param {Object} houseData - Datos de la casa { address, city, owner }
+   * @param {Object} houseData - Datos de la casa { name, description }
    * @returns {Promise<Object>} - Casa creada
    */
   async createHouse(houseData) {

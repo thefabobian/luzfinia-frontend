@@ -42,9 +42,8 @@ export default function HousesManagement() {
 
   // Estado del formulario de nueva casa
   const [formData, setFormData] = useState({
-    address: "",
-    city: "",
-    owner: "",
+    name: "",
+    description: "",
   });
 
   // Cargar todas las casas al montar el componente
@@ -70,7 +69,7 @@ export default function HousesManagement() {
   const handleCreateHouse = async () => {
     try {
       // Validación básica
-      if (!formData.address || !formData.city || !formData.owner) {
+      if (!formData.name || !formData.description) {
         enqueueSnackbar("Todos los campos son requeridos", {
           variant: "warning",
         });
@@ -82,7 +81,7 @@ export default function HousesManagement() {
       enqueueSnackbar("Casa creada exitosamente", { variant: "success" });
 
       // Resetear formulario y cerrar diálogo
-      setFormData({ address: "", city: "", owner: "" });
+      setFormData({ name: "", description: "" });
       setOpenCreateDialog(false);
     } catch (err) {
       console.error("Error al crear casa:", err);
@@ -192,13 +191,10 @@ export default function HousesManagement() {
           <TableHead>
             <TableRow>
               <TableCell sx={{ color: "#FFD54F", fontWeight: 600 }}>
-                Dirección
+                Nombre
               </TableCell>
               <TableCell sx={{ color: "#FFD54F", fontWeight: 600 }}>
-                Ciudad
-              </TableCell>
-              <TableCell sx={{ color: "#FFD54F", fontWeight: 600 }}>
-                Propietario
+                Descripción
               </TableCell>
               <TableCell sx={{ color: "#FFD54F", fontWeight: 600 }}>
                 Estado
@@ -214,17 +210,18 @@ export default function HousesManagement() {
           <TableBody>
             {houses.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} align="center" sx={{ color: "#b8bcc8" }}>
+                <TableCell colSpan={4} align="center" sx={{ color: "#b8bcc8" }}>
                   No hay casas registradas
                 </TableCell>
               </TableRow>
             ) : (
               houses.map((house) => (
                 <TableRow key={house._id}>
-                  <TableCell sx={{ color: "#fff" }}>{house.address}</TableCell>
-                  <TableCell sx={{ color: "#fff" }}>{house.city}</TableCell>
-                  <TableCell sx={{ color: "#fff" }}>
-                    {house.owner?.name || house.owner || "N/A"}
+                  <TableCell sx={{ color: "#fff", fontWeight: 500 }}>
+                    {house.name}
+                  </TableCell>
+                  <TableCell sx={{ color: "#b8bcc8" }}>
+                    {house.description}
                   </TableCell>
                   <TableCell>
                     <Chip
@@ -242,13 +239,22 @@ export default function HousesManagement() {
                       size="small"
                       onClick={() => handleViewStats(house)}
                       sx={{ color: "#2196F3" }}
+                      title="Ver estadísticas"
                     >
                       <BarChartIcon />
                     </IconButton>
-                    <IconButton size="small" sx={{ color: "#b8bcc8" }}>
+                    <IconButton
+                      size="small"
+                      sx={{ color: "#b8bcc8" }}
+                      title="Ver detalles"
+                    >
                       <Visibility />
                     </IconButton>
-                    <IconButton size="small" sx={{ color: "#f44336" }}>
+                    <IconButton
+                      size="small"
+                      sx={{ color: "#f44336" }}
+                      title="Eliminar"
+                    >
                       <Delete />
                     </IconButton>
                   </TableCell>
@@ -280,52 +286,40 @@ export default function HousesManagement() {
         <DialogContent>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
             <TextField
-              label="Dirección"
+              label="Nombre de la Casa"
               fullWidth
-              value={formData.address}
+              value={formData.name}
               onChange={(e) =>
-                setFormData({ ...formData, address: e.target.value })
+                setFormData({ ...formData, name: e.target.value })
               }
+              placeholder="Ej: Casa Familiar"
               sx={{
                 "& .MuiInputBase-root": { color: "#fff" },
                 "& .MuiInputLabel-root": { color: "#b8bcc8" },
                 "& .MuiOutlinedInput-root": {
                   "& fieldset": { borderColor: "rgba(255,255,255,0.3)" },
                   "&:hover fieldset": { borderColor: "#FFD54F" },
+                  "&.Mui-focused fieldset": { borderColor: "#FFD54F" },
                 },
               }}
             />
             <TextField
-              label="Ciudad"
+              label="Descripción"
               fullWidth
-              value={formData.city}
+              multiline
+              rows={3}
+              value={formData.description}
               onChange={(e) =>
-                setFormData({ ...formData, city: e.target.value })
+                setFormData({ ...formData, description: e.target.value })
               }
+              placeholder="Ej: Casa con 3 habitaciones y 2 baños."
               sx={{
                 "& .MuiInputBase-root": { color: "#fff" },
                 "& .MuiInputLabel-root": { color: "#b8bcc8" },
                 "& .MuiOutlinedInput-root": {
                   "& fieldset": { borderColor: "rgba(255,255,255,0.3)" },
                   "&:hover fieldset": { borderColor: "#FFD54F" },
-                },
-              }}
-            />
-            <TextField
-              label="ID del Propietario"
-              fullWidth
-              value={formData.owner}
-              onChange={(e) =>
-                setFormData({ ...formData, owner: e.target.value })
-              }
-              helperText="Ingresa el ID del usuario propietario"
-              sx={{
-                "& .MuiInputBase-root": { color: "#fff" },
-                "& .MuiInputLabel-root": { color: "#b8bcc8" },
-                "& .MuiFormHelperText-root": { color: "#b8bcc8" },
-                "& .MuiOutlinedInput-root": {
-                  "& fieldset": { borderColor: "rgba(255,255,255,0.3)" },
-                  "&:hover fieldset": { borderColor: "#FFD54F" },
+                  "&.Mui-focused fieldset": { borderColor: "#FFD54F" },
                 },
               }}
             />
@@ -371,7 +365,7 @@ export default function HousesManagement() {
           </Typography>
           {selectedHouse && (
             <Typography variant="body2" color="#b8bcc8">
-              {selectedHouse.address}, {selectedHouse.city}
+              {selectedHouse.name}
             </Typography>
           )}
         </DialogTitle>
