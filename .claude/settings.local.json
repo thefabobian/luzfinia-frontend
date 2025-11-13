@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir /s \"C:\\Users\\Nilso\\Desktop\\afinia\\luzfinia-frontend\\src\")",
+      "Bash(find:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
