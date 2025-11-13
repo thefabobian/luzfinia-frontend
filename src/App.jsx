@@ -1,7 +1,6 @@
 import AppRouter from "./routes/AppRouter"
 import { AuthProvider } from "./context/AuthContext"
 import { SnackbarProvider } from "notistack";
-import { CssBaseline } from "@mui/material";
 
 
 export default function App(){
@@ -13,7 +12,6 @@ export default function App(){
       autoHideDuration={3000}
       preventDuplicate
       >
-      <CssBaseline />
         <AppRouter />
       </SnackbarProvider>
     </AuthProvider>
