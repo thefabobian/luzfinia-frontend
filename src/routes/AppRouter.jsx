@@ -3,10 +3,12 @@ import Login from "../pages/Auth/Login";
 import Register from "../pages/Auth/Register";
 import DashboardAdmin from "../pages/Admin/DashboardAdmin";
 import DashboardClient from "../pages/Client/DashboardClient";
+import ManageHouse from "../pages/Client/ManageHouse";
 import ProtectedRoute from "../components/ProtectedRoute";
 import ApplianceModelsAdmin from "../features/appliances/pages/ApplianceModelsAdmin";
 import StatsHouse from "../features/stats/pages/StatsHouse";
 import StatsSelectHouse from "../features/stats/pages/StatsSelectHouse";
+import UsersAdmin from "../pages/Admin/UsersAdmin";
 
 // IMPORTA EL NUEVO LAYOUT
 import AdminLayout from "../layouts/AdminLayout";
@@ -35,11 +37,13 @@ export default function AppRouter() {
           {/* /admin/appliances */}
           <Route path="appliances" element={<ApplianceModelsAdmin />} />
 
-          {/* /admin/readings */}
+          {/* /admin/users */}
+          <Route path="users" element={<UsersAdmin />} />
+
+          {/* /admin/stats */}
           <Route path="stats" element={<StatsSelectHouse />} />
           <Route path="stats/:houseId" element={<StatsHouse />} />
 
-          
         </Route>
 
         {/* --- RUTAS CLIENTE --- */}
@@ -48,6 +52,16 @@ export default function AppRouter() {
           element={
             <ProtectedRoute role="client">
               <DashboardClient />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* /client/house/:houseId */}
+        <Route
+          path="/client/house/:houseId"
+          element={
+            <ProtectedRoute role="client">
+              <ManageHouse />
             </ProtectedRoute>
           }
         />

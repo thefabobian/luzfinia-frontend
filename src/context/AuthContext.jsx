@@ -5,11 +5,13 @@ export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   // Cargar usuario guardado en localStorage
   useEffect(() => {
     const savedUser = localStorage.getItem("user");
     if (savedUser) setUser(JSON.parse(savedUser));
+    setLoading(false);
   }, []);
 
   // 🔹 LOGIN
@@ -23,7 +25,11 @@ export function AuthProvider({ children }) {
 
   // 🔹 REGISTER
   const register = async (data) => {
-    await api.post("/users/register", data);
+    const res = await api.post("/users/register", data);
+    const { token, user } = res.data;
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(user));
+    setUser(user);
   };
 
   // 🔹 LOGOUT
@@ -33,7 +39,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

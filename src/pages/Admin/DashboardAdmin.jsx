@@ -1,6 +1,81 @@
-import { Box, Typography, Grid, Paper } from "@mui/material";
+import { useEffect, useState, useContext } from "react";
+import { Box, Typography, Grid, Paper, CircularProgress } from "@mui/material";
+import { AdminService } from "../../features/admin/services/admin.service";
+import { SocketContext } from "../../context/SocketContext";
 
 export default function DashboardAdmin() {
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    houses: 0,
+    appliances: 0,
+    users: 0,
+    consumption: "0.00",
+  });
+
+  const { connected, on, off } = useContext(SocketContext);
+
+  useEffect(() => {
+    async function loadStats() {
+      try {
+        const [houses, appliances, users, consumption] = await Promise.all([
+          AdminService.getHousesCount(),
+          AdminService.getAppliancesCount(),
+          AdminService.getUsersCount(),
+          AdminService.getTotalConsumption(),
+        ]);
+
+        setStats({
+          houses,
+          appliances,
+          users,
+          consumption,
+        });
+      } catch (error) {
+        console.error("Error cargando estadísticas del dashboard:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadStats();
+  }, []);
+
+  // Socket.io: actualizar consumo total en tiempo real
+  useEffect(() => {
+    if (!connected) return;
+
+    const handleNewReading = async (data) => {
+      console.log("📊 [Admin Dashboard] Nueva lectura recibida:", data);
+
+      // Recargar el consumo total del sistema
+      try {
+        const consumption = await AdminService.getTotalConsumption();
+        setStats((prev) => ({
+          ...prev,
+          consumption,
+        }));
+      } catch (error) {
+        console.error("Error actualizando consumo total:", error);
+      }
+    };
+
+    // Suscribirse al evento
+    on("new_reading", handleNewReading);
+
+    // Cleanup
+    return () => {
+      off("new_reading", handleNewReading);
+    };
+  }, [connected, on, off]);
+
+  if (loading) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "400px", color: "#fff" }}>
+        <CircularProgress color="inherit" />
+      </Box>
+    );
+  }
+
   return (
     <Box
       sx={{
@@ -52,7 +127,7 @@ export default function DashboardAdmin() {
               Casas registradas
             </Typography>
             <Typography variant="h4" fontWeight={700}>
-              24
+              {stats.houses}
             </Typography>
           </Paper>
         </Grid>
@@ -70,7 +145,7 @@ export default function DashboardAdmin() {
               Electrodomésticos base
             </Typography>
             <Typography variant="h4" fontWeight={700}>
-              56
+              {stats.appliances}
             </Typography>
           </Paper>
         </Grid>
@@ -88,7 +163,7 @@ export default function DashboardAdmin() {
               Usuarios activos
             </Typography>
             <Typography variant="h4" fontWeight={700}>
-              17
+              {stats.users}
             </Typography>
           </Paper>
         </Grid>
@@ -106,7 +181,7 @@ export default function DashboardAdmin() {
               Consumo total (kWh)
             </Typography>
             <Typography variant="h4" fontWeight={700}>
-              1.248
+              {stats.consumption}
             </Typography>
           </Paper>
         </Grid>

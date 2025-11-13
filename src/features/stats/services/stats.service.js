@@ -1,6 +1,11 @@
 import api from "../../../api/api";
 
 export const StatsService = {
+  async getHouses() {
+    const res = await api.get("/houses/all");
+    return res.data;
+  },
+
   async getConsumption(houseId) {
     const res = await api.get(`/readings/house/${houseId}/consumption`);
     return res.data;
